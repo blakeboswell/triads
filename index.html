@@ -847,7 +847,11 @@
   document.getElementById('fbChord').addEventListener('change', renderFretboard);
 
   const initialTab = ['shapes','positions','fretboard'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'shapes';
-  showTab(initialTab);
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === initialTab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + initialTab));
+  if (initialTab === 'shapes') renderShapes();
+  else if (initialTab === 'positions') renderAll();
+  else if (initialTab === 'fretboard') renderFretboard();
 </script>
 </body>
 </html>
