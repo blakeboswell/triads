@@ -179,7 +179,7 @@
         <select id="shapesRoot"></select>
       </label>
     </div>
-    <p class="tab-blurb">Each triad can be voiced 3 ways (inversions) depending on which note sits in the bass — root, third, or fifth — giving 6 moveable shapes per string group. <strong>R</strong> = root &middot; <strong>3</strong> / <strong>b3</strong> = major/minor third &middot; <strong>5</strong> = fifth. Filled dot = root; hollow = other tones. Circle above nut = open string.</p>
+    <p class="tab-blurb">Each triad can be voiced 3 ways (inversions) depending on which note sits in the bass (root, third, or fifth), giving 6 moveable shapes per string group. <strong>R</strong> = root &middot; <strong>3</strong> / <strong>b3</strong> = major/minor third &middot; <strong>5</strong> = fifth. Filled dot = root; hollow = other tones. Circle above nut = open string.</p>
     <div id="shapes-content"></div>
   </div>
 
@@ -607,12 +607,12 @@
     sel.innerHTML = '';
     const none = document.createElement('option');
     none.value = -1;
-    none.textContent = '— scale notes only —';
+    none.textContent = '(scale notes only)';
     sel.appendChild(none);
     SCALE_DEGREES.forEach((deg, i) => {
       const opt = document.createElement('option');
       opt.value = i;
-      opt.textContent = `${deg.roman}  —  ${chordName(mod(rootPc + deg.interval, 12), deg.qualityKey)}`;
+      opt.textContent = `${deg.roman}: ${chordName(mod(rootPc + deg.interval, 12), deg.qualityKey)}`;
       sel.appendChild(opt);
     });
   }
