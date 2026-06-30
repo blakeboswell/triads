@@ -188,14 +188,20 @@
       <label>String set
         <select id="positionsStringSet"></select>
       </label>
-      <label>Root note (I chord)
+      <label>Key
+        <select id="keyType">
+          <option value="major">Major</option>
+          <option value="minor">Minor</option>
+        </select>
+      </label>
+      <label>Root note
         <select id="root"></select>
       </label>
       <label>Progression
         <select id="progression"></select>
       </label>
     </div>
-    <p class="tab-blurb">All seven diatonic triads of a key, grouped into three hand positions. Each position is anchored on one inversion of the I chord (highlighted); the other chords use whichever inversion sits closest to that anchor, keeping your hand in roughly one place on the neck. To practice something musical: choose a progression, play it in all inversions and mix chords across inversions.</p>
+    <p class="tab-blurb">All seven diatonic triads of a key, grouped into three hand positions. Each position is anchored on one inversion of the tonic chord (highlighted); the other chords use whichever inversion sits closest to that anchor, keeping your hand in roughly one place on the neck. To practice something musical: choose a progression, play it in all inversions and mix chords across inversions.</p>
     <div id="positions"></div>
   </div>
 
@@ -221,16 +227,26 @@
     diminished: { name: 'Diminished', intervals: [0,3,6], labels: ['R','b3','b5']  },
   };
 
-  // The seven diatonic triads (I-vii°) of a major scale, relative to the selected root.
-  const SCALE_DEGREES = [
-    { roman: 'I',    interval: 0,  qualityKey: 'major'      },
-    { roman: 'ii',   interval: 2,  qualityKey: 'minor'      },
-    { roman: 'iii',  interval: 4,  qualityKey: 'minor'      },
-    { roman: 'IV',   interval: 5,  qualityKey: 'major'      },
-    { roman: 'V',    interval: 7,  qualityKey: 'major'      },
-    { roman: 'vi',   interval: 9,  qualityKey: 'minor'      },
-    { roman: 'vii°', interval: 11, qualityKey: 'diminished' },
-  ];
+  const SCALE_DEGREES = {
+    major: [
+      { roman: 'I',    interval: 0,  qualityKey: 'major'      },
+      { roman: 'ii',   interval: 2,  qualityKey: 'minor'      },
+      { roman: 'iii',  interval: 4,  qualityKey: 'minor'      },
+      { roman: 'IV',   interval: 5,  qualityKey: 'major'      },
+      { roman: 'V',    interval: 7,  qualityKey: 'major'      },
+      { roman: 'vi',   interval: 9,  qualityKey: 'minor'      },
+      { roman: 'vii°', interval: 11, qualityKey: 'diminished' },
+    ],
+    minor: [
+      { roman: 'i',   interval: 0,  qualityKey: 'minor'      },
+      { roman: 'ii°', interval: 2,  qualityKey: 'diminished' },
+      { roman: 'III', interval: 3,  qualityKey: 'major'      },
+      { roman: 'iv',  interval: 5,  qualityKey: 'minor'      },
+      { roman: 'v',   interval: 7,  qualityKey: 'minor'      },
+      { roman: 'VI',  interval: 8,  qualityKey: 'major'      },
+      { roman: 'VII', interval: 10, qualityKey: 'major'      },
+    ],
+  };
 
   // Open-string pitch classes (C = 0). String numbers follow standard guitar
   // numbering: 6 = low E ... 1 = high e.
@@ -254,13 +270,22 @@
 
   const INVERSION_NAMES = ['Root Position', '1st Inversion', '2nd Inversion'];
 
-  const PROGRESSIONS = [
-    { label: 'All chords',    degrees: null },
-    { label: 'I – IV – V',    degrees: ['I', 'IV', 'V'] },
-    { label: 'I – V – vi – IV', degrees: ['I', 'V', 'vi', 'IV'] },
-    { label: 'I – vi – IV – V', degrees: ['I', 'vi', 'IV', 'V'] },
-    { label: 'ii – V – I',    degrees: ['ii', 'V', 'I'] },
-  ];
+  const PROGRESSIONS = {
+    major: [
+      { label: 'All chords',        degrees: null },
+      { label: 'I - IV - V',        degrees: ['I', 'IV', 'V'] },
+      { label: 'I - V - vi - IV',   degrees: ['I', 'V', 'vi', 'IV'] },
+      { label: 'I - vi - IV - V',   degrees: ['I', 'vi', 'IV', 'V'] },
+      { label: 'ii - V - I',        degrees: ['ii', 'V', 'I'] },
+    ],
+    minor: [
+      { label: 'All chords',        degrees: null },
+      { label: 'i - iv - v',        degrees: ['i', 'iv', 'v'] },
+      { label: 'i - VI - III - VII', degrees: ['i', 'VI', 'III', 'VII'] },
+      { label: 'i - VII - VI - VII', degrees: ['i', 'VII', 'VI', 'VII'] },
+      { label: 'ii° - v - i',       degrees: ['ii°', 'v', 'i'] },
+    ],
+  };
 
   const SHAPE_COLORS = {
     'major-0': '#2563eb',  'major-1': '#16a34a',  'major-2': '#dc2626',
@@ -482,17 +507,22 @@
   function renderAll() {
     const rootPc = parseInt(document.getElementById('root').value, 10);
     const set = STRING_SETS[parseInt(document.getElementById('positionsStringSet').value, 10)];
+    const keyType = document.getElementById('keyType').value;
+    const scaleDegrees = SCALE_DEGREES[keyType];
+    const scaleIntervals = keyType === 'minor' ? [0,2,3,5,7,8,10] : [0,2,4,5,7,9,11];
+    const anchorQuality = QUALITIES[keyType];
+    const tonicRoman = scaleDegrees[0].roman;
 
-    const scalePcs = new Set([0,2,4,5,7,9,11].map(i => mod(rootPc + i, 12)));
+    const scalePcs = new Set(scaleIntervals.map(i => mod(rootPc + i, 12)));
 
-    const degreeChords = SCALE_DEGREES.map(deg => ({
+    const degreeChords = scaleDegrees.map(deg => ({
       ...deg,
       rootPc: mod(rootPc + deg.interval, 12),
       quality: QUALITIES[deg.qualityKey],
     }));
 
     const progIdx = parseInt(document.getElementById('progression').value, 10);
-    const prog = PROGRESSIONS[progIdx];
+    const prog = PROGRESSIONS[keyType][progIdx] ?? PROGRESSIONS[keyType][0];
     const activeChords = prog.degrees
       ? prog.degrees.map(r => degreeChords.find(dc => dc.roman === r))
       : degreeChords;
@@ -511,7 +541,7 @@
     });
 
     for (let p = 0; p < 3; p++) {
-      const anchorShape = computeShape(set, rootPc, QUALITIES.major, p);
+      const anchorShape = computeShape(set, rootPc, anchorQuality, p);
       const anchorFret = Math.min(...anchorShape.frets);
       const shapes = activeChords.map(dc => pickClosestShape(set, dc.rootPc, dc.quality, anchorFret));
       const allFrets = shapes.flatMap(s => s.frets);
@@ -535,7 +565,7 @@
         const shape = shapes[i];
         const color = SHAPE_COLORS[`${dc.qualityKey}-${shape.inversionIndex}`];
         const cell = document.createElement('div');
-        cell.className = 'cell' + (dc.roman === 'I' ? ' anchor-cell' : '');
+        cell.className = 'cell' + (dc.roman === tonicRoman ? ' anchor-cell' : '');
         cell.innerHTML = renderDiagram(set, shape, startFret, numCells, color, topPad, scalePcs) +
           `<div class="notes-label">${shape.pcs.map(pc => NOTE_NAMES[pc]).join(' &ndash; ')}</div>`;
         grid.appendChild(cell);
@@ -786,19 +816,25 @@
     });
   });
 
-  // populate progression dropdown
-  const progSelect = document.getElementById('progression');
-  PROGRESSIONS.forEach((p, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = p.label;
-    progSelect.appendChild(opt);
-  });
+  function populateProgressions() {
+    const keyType = document.getElementById('keyType').value;
+    const sel = document.getElementById('progression');
+    sel.innerHTML = '';
+    PROGRESSIONS[keyType].forEach((p, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = p.label;
+      sel.appendChild(opt);
+    });
+  }
+
+  populateProgressions();
 
   document.getElementById('shapesStringSet').addEventListener('change', renderShapes);
   document.getElementById('shapesRoot').addEventListener('change', renderShapes);
   document.getElementById('positionsStringSet').addEventListener('change', renderAll);
   document.getElementById('root').addEventListener('change', renderAll);
+  document.getElementById('keyType').addEventListener('change', () => { populateProgressions(); renderAll(); });
   document.getElementById('progression').addEventListener('change', renderAll);
 
   // Fretboard tab init
