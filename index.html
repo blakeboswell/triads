@@ -639,7 +639,7 @@
     none.value = -1;
     none.textContent = '(scale notes only)';
     sel.appendChild(none);
-    SCALE_DEGREES.forEach((deg, i) => {
+    SCALE_DEGREES.major.forEach((deg, i) => {
       const opt = document.createElement('option');
       opt.value = i;
       opt.textContent = `${deg.roman}: ${chordName(mod(rootPc + deg.interval, 12), deg.qualityKey)}`;
@@ -661,7 +661,7 @@
     let chordQKey   = null;
 
     if (degreeIdx >= 0) {
-      const deg      = SCALE_DEGREES[degreeIdx];
+      const deg      = SCALE_DEGREES.major[degreeIdx];
       const cRoot    = mod(rootPc + deg.interval, 12);
       const quality  = QUALITIES[deg.qualityKey];
       chordQKey      = deg.qualityKey;
