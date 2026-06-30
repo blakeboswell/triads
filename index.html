@@ -361,7 +361,7 @@
     if (activeTab === 'positions') renderAll();
   }
 
-  function renderDiagram(stringSet, shape, startFret, numCells, color, topPad = 0) {
+  function renderDiagram(stringSet, shape, startFret, numCells, color, topPad = 0, scalePcs = null) {
     const { frets, labels, pcs } = shape;
     const dotLabel = j => (labelMode === 'notes' && pcs) ? NOTE_NAMES[pcs[j]] : labels[j];
 
@@ -399,6 +399,27 @@
       const y = nutY + i * cellHeight;
       const isNut = i === 0 && startFret === 0;
       svg += `<line x1="${padding}" y1="${y}" x2="${padding + stringGap * (numStrings - 1)}" y2="${y}" stroke="#444" stroke-width="${isNut ? 4 : 1.5}"/>`;
+    }
+
+    // scale tone dots (non-triad notes, positions tab only)
+    if (scalePcs) {
+      for (let j = 0; j < 3; j++) {
+        const openPc = STRINGS[stringSet.strings[j]].open;
+        const x = padding + diagramCols[j] * stringGap;
+        const triadF = frets[j];
+        const fMin = startFret === 0 ? 0 : startFret;
+        for (let f = fMin; f < startFret + numCells; f++) {
+          if (f === triadF) continue;
+          const pc = mod(openPc + f, 12);
+          if (!scalePcs.has(pc)) continue;
+          if (f === 0) {
+            svg += `<circle cx="${x}" cy="${nutY - 9}" r="4" fill="none" stroke="#ccc" stroke-width="1.5"/>`;
+          } else {
+            const y = nutY + (f - startFret - 0.5) * cellHeight;
+            svg += `<circle cx="${x}" cy="${y}" r="5" fill="#ddd" stroke="#bbb" stroke-width="1.5"/>`;
+          }
+        }
+      }
     }
 
     // note dots — only on the active string columns
@@ -462,6 +483,8 @@
     const rootPc = parseInt(document.getElementById('root').value, 10);
     const set = STRING_SETS[parseInt(document.getElementById('positionsStringSet').value, 10)];
 
+    const scalePcs = new Set([0,2,4,5,7,9,11].map(i => mod(rootPc + i, 12)));
+
     const degreeChords = SCALE_DEGREES.map(deg => ({
       ...deg,
       rootPc: mod(rootPc + deg.interval, 12),
@@ -513,7 +536,7 @@
         const color = SHAPE_COLORS[`${dc.qualityKey}-${shape.inversionIndex}`];
         const cell = document.createElement('div');
         cell.className = 'cell' + (dc.roman === 'I' ? ' anchor-cell' : '');
-        cell.innerHTML = renderDiagram(set, shape, startFret, numCells, color, topPad) +
+        cell.innerHTML = renderDiagram(set, shape, startFret, numCells, color, topPad, scalePcs) +
           `<div class="notes-label">${shape.pcs.map(pc => NOTE_NAMES[pc]).join(' &ndash; ')}</div>`;
         grid.appendChild(cell);
       });
