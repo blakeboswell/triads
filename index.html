@@ -17,7 +17,7 @@
     color: #1a1a1a;
   }
   h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
-  .subtitle { color: #555; margin-top: 0; margin-bottom: 1.5rem; }
+  .tab-blurb { font-size: 0.88rem; color: #666; line-height: 1.6; margin: 0 0 1.25rem; }
   .controls {
     display: flex;
     gap: 1.5rem;
@@ -156,15 +156,6 @@
     gap: 1rem;
     margin-top: 0.5rem;
   }
-  .intro-section {
-    margin-top: 1.75rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--border);
-  }
-  .intro-section h2 { font-size: 1.1rem; margin: 0 0 0.5rem; }
-  .intro-section p, .intro-section ul { margin: 0 0 0.6rem; line-height: 1.6; color: #333; font-size: 0.95rem; }
-  .intro-section ul { padding-left: 1.25rem; }
-  .intro-section li { margin-bottom: 0.25rem; }
   svg { display: block; margin: 0 auto; }
 </style>
 </head>
@@ -173,43 +164,13 @@
 
   <div class="tab-bar-row">
     <div class="tabs">
-      <button class="tab-btn active" data-tab="intro" onclick="showTab('intro')">Introduction</button>
-      <button class="tab-btn" data-tab="shapes" onclick="showTab('shapes')">Shapes</button>
+      <button class="tab-btn active" data-tab="shapes" onclick="showTab('shapes')">Shapes</button>
       <button class="tab-btn" data-tab="positions" onclick="showTab('positions')">Positions</button>
       <button class="tab-btn" data-tab="fretboard" onclick="showTab('fretboard')">Fretboard</button>
     </div>
   </div>
 
-  <div id="tab-intro" class="tab-panel active">
-    <p class="subtitle" style="margin-top:0.5rem">Guitar triads &mdash; three-note chords &mdash; can be played on any set of three adjacent strings. This tool shows how triads are fingered across the neck, organized by string group and hand position.</p>
-
-    <div class="intro-section">
-      <h2>The 6 moveable shapes</h2>
-      <p>On any three adjacent strings, a major or minor triad can be voiced three ways &mdash; called <strong>inversions</strong> &mdash; depending on which note sits in the bass: the root, the third, or the fifth. That gives 6 distinct fingering shapes per string group.</p>
-      <p>Each shape is <strong>moveable</strong>: the same finger pattern applies in any key &mdash; slide it up or down the neck to any root. The <strong>Shapes</strong> tab shows all 6 patterns for each string group.</p>
-      <p>EAD and ADG share the same shapes (both are tuned in perfect fourths). DGB and GBe are slightly different because the B string sits a half-step lower than a perfect fourth above G.</p>
-    </div>
-
-    <div class="intro-section">
-      <h2>Positions</h2>
-      <p>The <strong>Positions</strong> tab shows all seven diatonic triads (I through vii&deg;) of a key, grouped into three <em>hand positions</em>. Each position is anchored on one inversion of the I chord; the other chords use whichever inversion sits closest to that anchor, keeping your hand in roughly one place on the neck.</p>
-      <ul>
-        <li><strong>ROOT</strong> &mdash; I chord in root position (root in the bass)</li>
-        <li><strong>1INV</strong> &mdash; I chord in 1st inversion (3rd in the bass)</li>
-        <li><strong>2INV</strong> &mdash; I chord in 2nd inversion (5th in the bass)</li>
-      </ul>
-      <p>The highlighted column is the I-chord anchor for that position. Use the Progression filter to show only the chords in a common chord progression.</p>
-    </div>
-
-    <div class="intro-section">
-      <h2>Reading the diagrams</h2>
-      <p><strong>R</strong> = root &nbsp;&middot;&nbsp; <strong>3</strong> / <strong>b3</strong> = major / minor third &nbsp;&middot;&nbsp; <strong>5</strong> = fifth.</p>
-      <p>A <strong>filled dot</strong> marks the root note; hollow dots are the other chord tones. A circle <em>above</em> the nut indicates an open string. Fret numbers appear on the left of each row; a thick top line means the position starts at the nut.</p>
-      <p>Colors identify the 6 moveable shapes and are consistent across both the Shapes and Positions tabs.</p>
-    </div>
-  </div>
-
-  <div id="tab-shapes" class="tab-panel">
+  <div id="tab-shapes" class="tab-panel active">
     <div class="controls">
       <label>String set
         <select id="shapesStringSet"></select>
@@ -218,6 +179,7 @@
         <select id="shapesRoot"></select>
       </label>
     </div>
+    <p class="tab-blurb">Each triad can be voiced 3 ways (inversions) depending on which note sits in the bass — root, third, or fifth — giving 6 moveable shapes per string group. <strong>R</strong> = root &middot; <strong>3</strong> / <strong>b3</strong> = major/minor third &middot; <strong>5</strong> = fifth. Filled dot = root; hollow = other tones. Circle above nut = open string.</p>
     <div id="shapes-content"></div>
   </div>
 
@@ -233,6 +195,7 @@
         <select id="progression"></select>
       </label>
     </div>
+    <p class="tab-blurb">All seven diatonic triads of a key, grouped into three hand positions. Each position is anchored on one inversion of the I chord (highlighted); the other chords use whichever inversion sits closest to that anchor, keeping your hand in roughly one place on the neck.</p>
     <div id="positions"></div>
   </div>
 
