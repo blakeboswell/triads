@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guitar Triad Shapes</title>
+<style>
+  :root {
+    --accent: #2563eb;
+    --border: #e3e3e3;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 960px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    color: #1a1a1a;
+  }
+  h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+  .subtitle { color: #555; margin-top: 0; margin-bottom: 1.5rem; }
+  .controls {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .controls label { font-weight: 600; font-size: 0.95rem; }
+  .controls select {
+    margin-left: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .position-section {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .position-section:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .position-section h2 { font-size: 1.2rem; margin: 0 0 0.15rem; }
+  .position-sub { margin: 0 0 0.75rem; color: #555; font-size: 0.9rem; }
+  .grid {
+    display: grid;
+    grid-template-columns: 26px repeat(6, 1fr);
+    gap: 0.3rem;
+    align-items: start;
+  }
+  .pos-section-label {
+    grid-column: 1 / -1;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #555;
+    padding: 0.75rem 0 0.1rem;
+    border-top: 1px solid var(--border);
+  }
+  .pos-section-label:first-of-type {
+    padding-top: 0;
+    border-top: none;
+  }
+  .fret-ruler {
+    padding-top: 0.35rem;
+  }
+  .grid-header {
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 0.35rem 0;
+    color: #333;
+  }
+  .grid-header .chord-name {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin-top: 1px;
+  }
+  .cell {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.35rem;
+    text-align: center;
+    background: #fafafa;
+  }
+  .cell.anchor-cell {
+    border-color: var(--accent);
+  }
+  .notes-label {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #444;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .legend {
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.5;
+  }
+  .legend strong { color: #1a1a1a; }
+  .tab-bar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1.5rem;
+  }
+  .tabs {
+    display: flex;
+    border-bottom: 2px solid var(--border);
+    flex: 1;
+  }
+  .label-toggle-btn {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    color: #555;
+    white-space: nowrap;
+    margin-bottom: 2px;
+  }
+  .label-toggle-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .tab-btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #555;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .shapes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+  .intro-section {
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+  .intro-section h2 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+  .intro-section p, .intro-section ul { margin: 0 0 0.6rem; line-height: 1.6; color: #333; font-size: 0.95rem; }
+  .intro-section ul { padding-left: 1.25rem; }
+  .intro-section li { margin-bottom: 0.25rem; }
+  svg { display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+  <h1>Guitar Triad Shapes</h1>
+
+  <div class="tab-bar-row">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="intro" onclick="showTab('intro')">Introduction</button>
+      <button class="tab-btn" data-tab="shapes" onclick="showTab('shapes')">Shapes</button>
+      <button class="tab-btn" data-tab="positions" onclick="showTab('positions')">Positions</button>
+      <button class="tab-btn" data-tab="fretboard" onclick="showTab('fretboard')">Fretboard</button>
+    </div>
+    <button id="label-toggle" class="label-toggle-btn" onclick="toggleLabelMode()">Note names</button>
+  </div>
+
+  <div id="tab-intro" class="tab-panel active">
+    <p class="subtitle" style="margin-top:0.5rem">Guitar triads &mdash; three-note chords &mdash; can be played on any set of three adjacent strings. This tool shows how triads are fingered across the neck, organized by string group and hand position.</p>
+
+    <div class="intro-section">
+      <h2>The 6 moveable shapes</h2>
+      <p>On any three adjacent strings, a major or minor triad can be voiced three ways &mdash; called <strong>inversions</strong> &mdash; depending on which note sits in the bass: the root, the third, or the fifth. That gives 6 distinct fingering shapes per string group.</p>
+      <p>Each shape is <strong>moveable</strong>: the same finger pattern applies in any key &mdash; slide it up or down the neck to any root. The <strong>Shapes</strong> tab shows all 6 patterns for each string group.</p>
+      <p>EAD and ADG share the same shapes (both are tuned in perfect fourths). DGB and GBe are slightly different because the B string sits a half-step lower than a perfect fourth above G.</p>
+    </div>
+
+    <div class="intro-section">
+      <h2>Positions</h2>
+      <p>The <strong>Positions</strong> tab shows all seven diatonic triads (I through vii&deg;) of a key, grouped into three <em>hand positions</em>. Each position is anchored on one inversion of the I chord; the other chords use whichever inversion sits closest to that anchor, keeping your hand in roughly one place on the neck.</p>
+      <ul>
+        <li><strong>ROOT</strong> &mdash; I chord in root position (root in the bass)</li>
+        <li><strong>1INV</strong> &mdash; I chord in 1st inversion (3rd in the bass)</li>
+        <li><strong>2INV</strong> &mdash; I chord in 2nd inversion (5th in the bass)</li>
+      </ul>
+      <p>The highlighted column is the I-chord anchor for that position. Use the Progression filter to show only the chords in a common chord progression.</p>
+    </div>
+
+    <div class="intro-section">
+      <h2>Reading the diagrams</h2>
+      <p><strong>R</strong> = root &nbsp;&middot;&nbsp; <strong>3</strong> / <strong>b3</strong> = major / minor third &nbsp;&middot;&nbsp; <strong>5</strong> = fifth.</p>
+      <p>A <strong>filled dot</strong> marks the root note; hollow dots are the other chord tones. A circle <em>above</em> the nut indicates an open string. Fret numbers appear on the left of each row; a thick top line means the position starts at the nut.</p>
+      <p>Colors identify the 6 moveable shapes and are consistent across both the Shapes and Positions tabs.</p>
+    </div>
+  </div>
+
+  <div id="tab-shapes" class="tab-panel">
+    <div class="controls">
+      <label>String set
+        <select id="shapesStringSet"></select>
+      </label>
+      <label id="shapes-root-wrap" style="display:none">Root (for note names)
+        <select id="shapesRoot"></select>
+      </label>
+    </div>
+    <div id="shapes-content"></div>
+  </div>
+
+  <div id="tab-positions" class="tab-panel">
+    <div class="controls">
+      <label>String set
+        <select id="positionsStringSet"></select>
+      </label>
+      <label>Root note (I chord)
+        <select id="root"></select>
+      </label>
+      <label>Progression
+        <select id="progression"></select>
+      </label>
+    </div>
+    <div id="positions"></div>
+  </div>
+
+  <div id="tab-fretboard" class="tab-panel">
+    <div class="controls">
+      <label>Key
+        <select id="fbRoot"></select>
+      </label>
+      <label>Highlight
+        <select id="fbChord"></select>
+      </label>
+    </div>
+    <div id="fretboard-content" style="overflow-x:auto"></div>
+  </div>
+
+<script>
+  const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+  const QUALITIES = {
+    major:      { name: 'Major',      intervals: [0,4,7], labels: ['R','3','5']    },
+    minor:      { name: 'Minor',      intervals: [0,3,7], labels: ['R','b3','5']   },
+    augmented:  { name: 'Augmented',  intervals: [0,4,8], labels: ['R','3','#5']   },
+    diminished: { name: 'Diminished', intervals: [0,3,6], labels: ['R','b3','b5']  },
+  };
+
+  // The seven diatonic triads (I-vii°) of a major scale, relative to the selected root.
+  const SCALE_DEGREES = [
+    { roman: 'I',    interval: 0,  qualityKey: 'major'      },
+    { roman: 'ii',   interval: 2,  qualityKey: 'minor'      },
+    { roman: 'iii',  interval: 4,  qualityKey: 'minor'      },
+    { roman: 'IV',   interval: 5,  qualityKey: 'major'      },
+    { roman: 'V',    interval: 7,  qualityKey: 'major'      },
+    { roman: 'vi',   interval: 9,  qualityKey: 'minor'      },
+    { roman: 'vii°', interval: 11, qualityKey: 'diminished' },
+  ];
+
+  // Open-string pitch classes (C = 0). String numbers follow standard guitar
+  // numbering: 6 = low E ... 1 = high e.
+  const STRINGS = {
+    6: { name: 'E', open: 4 },
+    5: { name: 'A', open: 9 },
+    4: { name: 'D', open: 2 },
+    3: { name: 'G', open: 7 },
+    2: { name: 'B', open: 11 },
+    1: { name: 'e', open: 4 },
+  };
+
+  // Each set lists strings from lowest pitch to highest pitch (left to right
+  // in the diagram).
+  const STRING_SETS = [
+    { notes: 'EAD', strings: [6,5,4] },
+    { notes: 'ADG', strings: [5,4,3] },
+    { notes: 'DGB', strings: [4,3,2] },
+    { notes: 'GBe', strings: [3,2,1] },
+  ];
+
+  const INVERSION_NAMES = ['Root Position', '1st Inversion', '2nd Inversion'];
+
+  const PROGRESSIONS = [
+    { label: 'All chords',    degrees: null },
+    { label: 'I – IV – V',    degrees: ['I', 'IV', 'V'] },
+    { label: 'I – V – vi – IV', degrees: ['I', 'V', 'vi', 'IV'] },
+    { label: 'I – vi – IV – V', degrees: ['I', 'vi', 'IV', 'V'] },
+    { label: 'ii – V – I',    degrees: ['ii', 'V', 'I'] },
+  ];
+
+  const SHAPE_COLORS = {
+    'major-0': '#2563eb',  'major-1': '#16a34a',  'major-2': '#dc2626',
+    'minor-0': '#7c3aed',  'minor-1': '#ea580c',  'minor-2': '#0891b2',
+    'augmented-0':  '#d97706', 'augmented-1':  '#0f766e', 'augmented-2':  '#db2777',
+    'diminished-0': '#64748b', 'diminished-1': '#4338ca', 'diminished-2': '#be123c',
+  };
+
+  function mod(n, m) { return ((n % m) + m) % m; }
+
+  function chordName(rootPc, qualityKey) {
+    const suffix = { major: '', minor: 'm', augmented: 'aug', diminished: '°' };
+    return NOTE_NAMES[rootPc] + (suffix[qualityKey] ?? '');
+  }
+
+  // Compute the canonical (root-independent) shape pattern for a given
+  // string-set / quality / inversion: fret offsets relative to the
+  // inversion-defining note (fixed at offset 0), choosing whichever
+  // arrangement and octave placement of the other two tones gives the
+  // smallest span. This depends only on the tuning/quality/inversion, so
+  // the resulting fingering pattern is identical in every key.
+  function canonicalShape(stringSet, quality, inversionIndex) {
+    const { intervals, labels } = quality;
+    const otherIdxs = [0, 1, 2].filter(i => i !== inversionIndex);
+    const opens = stringSet.strings.map(s => STRINGS[s].open);
+
+    let best = null;
+    for (const [idxMid, idxHigh] of [otherIdxs, [otherIdxs[1], otherIdxs[0]]]) {
+      const rawMid = (intervals[idxMid] - intervals[inversionIndex]) - (opens[1] - opens[0]);
+      const rawHigh = (intervals[idxHigh] - intervals[inversionIndex]) - (opens[2] - opens[0]);
+      const cMid = mod(rawMid, 12);
+      const cHigh = mod(rawHigh, 12);
+
+      for (const dMid of [cMid, cMid - 12]) {
+        for (const dHigh of [cHigh, cHigh - 12]) {
+          const offsets = [0, dMid, dHigh];
+          const span = Math.max(...offsets) - Math.min(...offsets);
+          if (!best || span < best.span) {
+            best = {
+              offsets,
+              labels: [labels[inversionIndex], labels[idxMid], labels[idxHigh]],
+              intervalIdxs: [inversionIndex, idxMid, idxHigh],
+              span,
+            };
+          }
+        }
+      }
+    }
+    return best;
+  }
+
+  // Place the canonical shape on the fretboard for a given root pitch
+  // class, shifting up an octave if needed to keep all frets >= 0.
+  function computeShape(stringSet, rootPc, quality, inversionIndex) {
+    const { intervals } = quality;
+    const canon = canonicalShape(stringSet, quality, inversionIndex);
+    const opens = stringSet.strings.map(s => STRINGS[s].open);
+
+    const fLow = mod(rootPc + intervals[inversionIndex] - opens[0], 12);
+    let frets = canon.offsets.map(d => fLow + d);
+    if (Math.min(...frets) < 0) {
+      frets = frets.map(f => f + 12);
+    }
+
+    return {
+      frets,
+      labels: canon.labels,
+      pcs: canon.intervalIdxs.map(i => mod(rootPc + intervals[i], 12)),
+      span: canon.span,
+    };
+  }
+
+  // Among the three inversions of a chord on this string set, pick whichever
+  // shape starts on the fret closest to the given anchor fret.
+  function pickClosestShape(stringSet, rootPc, quality, anchorFret) {
+    let best = null;
+    for (let inv = 0; inv < 3; inv++) {
+      const shape = computeShape(stringSet, rootPc, quality, inv);
+      const startFret = Math.min(...shape.frets);
+      const dist = Math.abs(startFret - anchorFret);
+      if (!best || dist < best.dist || (dist === best.dist && shape.span < best.shape.span)) {
+        best = { shape, dist, inv };
+      }
+    }
+    return { ...best.shape, inversionIndex: best.inv };
+  }
+
+  let labelMode = 'interval'; // 'interval' | 'notes'
+
+  function toggleLabelMode() {
+    labelMode = labelMode === 'interval' ? 'notes' : 'interval';
+    const btn = document.getElementById('label-toggle');
+    btn.classList.toggle('active', labelMode === 'notes');
+    btn.textContent = labelMode === 'notes' ? 'Intervals' : 'Note names';
+    document.getElementById('shapes-root-wrap').style.display = labelMode === 'notes' ? '' : 'none';
+    const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+    if (activeTab === 'shapes') renderShapes();
+    if (activeTab === 'positions') renderAll();
+  }
+
+  function renderDiagram(stringSet, shape, startFret, numCells, color, topPad = 0) {
+    const { frets, labels, pcs } = shape;
+    const dotLabel = j => (labelMode === 'notes' && pcs) ? NOTE_NAMES[pcs[j]] : labels[j];
+
+    const padding = 12;
+    const nutY = topPad + padding;
+    const cellHeight = 26;
+    const stringGap = 16;
+    const numStrings = 6;
+    const gridHeight = numCells * cellHeight;
+    const width = padding * 2 + stringGap * (numStrings - 1);
+    const height = topPad + padding + gridHeight + 22;
+
+    // Map each group string to its column in the 6-string diagram (string 6=low E → col 0)
+    const diagramCols = stringSet.strings.map(s => 6 - s);
+
+    let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+
+    // shaded guide bands on marked frets (odd, >= 3)
+    for (let i = 0; i < numCells; i++) {
+      const fret = startFret + i;
+      if (fret >= 3 && fret % 2 === 1) {
+        const y = nutY + (i - 1) * cellHeight;
+        svg += `<rect x="0" y="${y}" width="${width}" height="${cellHeight}" fill="#eef2ff"/>`;
+      }
+    }
+
+    // all 6 strings (vertical lines)
+    for (let i = 0; i < numStrings; i++) {
+      const x = padding + i * stringGap;
+      svg += `<line x1="${x}" y1="${nutY}" x2="${x}" y2="${nutY + gridHeight}" stroke="#888" stroke-width="1.5"/>`;
+    }
+
+    // frets (horizontal lines) spanning all 6 strings
+    for (let i = 0; i <= numCells; i++) {
+      const y = nutY + i * cellHeight;
+      const isNut = i === 0 && startFret === 0;
+      svg += `<line x1="${padding}" y1="${y}" x2="${padding + stringGap * (numStrings - 1)}" y2="${y}" stroke="#444" stroke-width="${isNut ? 4 : 1.5}"/>`;
+    }
+
+    // note dots — only on the active string columns
+    for (let j = 0; j < 3; j++) {
+      const x = padding + diagramCols[j] * stringGap;
+      const f = frets[j];
+      const isRoot = labels[j] === 'R';
+      const lbl = dotLabel(j);
+      let y;
+      if (f === 0 && startFret === 0) {
+        // Open string: draw indicator above the nut
+        y = nutY - 9;
+        svg += `<circle cx="${x}" cy="${y}" r="7" fill="none" stroke="${color}" stroke-width="2"/>`;
+        svg += `<text x="${x}" y="${y + 3}" font-size="9" text-anchor="middle" font-weight="700" fill="${color}">${lbl}</text>`;
+      } else {
+        y = nutY + (f - startFret - 0.5) * cellHeight;
+        svg += `<circle cx="${x}" cy="${y}" r="7" fill="${isRoot ? color : '#fff'}" stroke="${color}" stroke-width="2"/>`;
+        svg += `<text x="${x}" y="${y + 3}" font-size="9" text-anchor="middle" font-weight="700" fill="${isRoot ? '#fff' : color}">${lbl}</text>`;
+      }
+    }
+
+    // string-name labels — only under the active strings
+    for (let j = 0; j < 3; j++) {
+      const x = padding + diagramCols[j] * stringGap;
+      svg += `<text x="${x}" y="${height - 4}" font-size="10" text-anchor="middle" fill="#777">${STRINGS[stringSet.strings[j]].name}</text>`;
+    }
+
+    svg += `</svg>`;
+    return svg;
+  }
+
+  // Shared fret-number ruler shown once on the left of each position's row,
+  // aligned to the same padding/cellHeight as the diagrams.
+  function renderFretRuler(startFret, numCells, topPad = 0) {
+    const padding = 12;
+    const nutY = topPad + padding;
+    const cellHeight = 26;
+    const width = 26;
+    const height = topPad + padding + numCells * cellHeight + 22;
+
+    let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+    for (let i = 0; i < numCells; i++) {
+      const fret = startFret + i;
+      if (fret >= 3 && fret % 2 === 1) {
+        const y = nutY + (i - 0.5) * cellHeight + 5;
+        svg += `<text x="${width - 2}" y="${y}" font-size="13" font-weight="700" text-anchor="end" fill="#1a1a1a">${fret}</text>`;
+      }
+    }
+    svg += `</svg>`;
+    return svg;
+  }
+
+  function makeHeaderCell(html) {
+    const div = document.createElement('div');
+    div.className = 'grid-header';
+    div.innerHTML = html;
+    return div;
+  }
+
+  function renderAll() {
+    const rootPc = parseInt(document.getElementById('root').value, 10);
+    const set = STRING_SETS[parseInt(document.getElementById('positionsStringSet').value, 10)];
+
+    const degreeChords = SCALE_DEGREES.map(deg => ({
+      ...deg,
+      rootPc: mod(rootPc + deg.interval, 12),
+      quality: QUALITIES[deg.qualityKey],
+    }));
+
+    const progIdx = parseInt(document.getElementById('progression').value, 10);
+    const prog = PROGRESSIONS[progIdx];
+    const activeChords = prog.degrees
+      ? prog.degrees.map(r => degreeChords.find(dc => dc.roman === r))
+      : degreeChords;
+
+    const container = document.getElementById('positions');
+    container.innerHTML = '';
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    grid.style.gridTemplateColumns = `26px repeat(${activeChords.length}, 1fr)`;
+
+    // single header row (ruler placeholder + chord names)
+    grid.appendChild(makeHeaderCell(''));
+    activeChords.forEach(dc => {
+      grid.appendChild(makeHeaderCell(`${dc.roman}<br><span class="chord-name">${chordName(dc.rootPc, dc.qualityKey)}</span>`));
+    });
+
+    for (let p = 0; p < 3; p++) {
+      const anchorShape = computeShape(set, rootPc, QUALITIES.major, p);
+      const anchorFret = Math.min(...anchorShape.frets);
+      const shapes = activeChords.map(dc => pickClosestShape(set, dc.rootPc, dc.quality, anchorFret));
+      const allFrets = shapes.flatMap(s => s.frets);
+      const minFret = Math.min(...allFrets);
+      const startFret = Math.max(0, minFret - 1);
+      const numCells = Math.max(Math.max(...allFrets) - startFret + 1, 4);
+      const hasOpenStrings = startFret === 0 && shapes.some(s => s.frets.some(f => f === 0));
+      const topPad = hasOpenStrings ? 12 : 0;
+
+      const labelCell = document.createElement('div');
+      labelCell.className = 'pos-section-label';
+      labelCell.textContent = ['Root Position', '1st Inversion', '2nd Inversion'][p];
+      grid.appendChild(labelCell);
+
+      const ruler = document.createElement('div');
+      ruler.className = 'fret-ruler';
+      ruler.innerHTML = renderFretRuler(startFret, numCells, topPad);
+      grid.appendChild(ruler);
+
+      activeChords.forEach((dc, i) => {
+        const shape = shapes[i];
+        const color = SHAPE_COLORS[`${dc.qualityKey}-${shape.inversionIndex}`];
+        const cell = document.createElement('div');
+        cell.className = 'cell' + (dc.roman === 'I' ? ' anchor-cell' : '');
+        cell.innerHTML = renderDiagram(set, shape, startFret, numCells, color, topPad) +
+          `<div class="notes-label">${shape.pcs.map(pc => NOTE_NAMES[pc]).join(' &ndash; ')}</div>`;
+        grid.appendChild(cell);
+      });
+    }
+
+    container.appendChild(grid);
+  }
+
+  function renderShapes() {
+    const set = STRING_SETS[parseInt(document.getElementById('shapesStringSet').value, 10)];
+    const container = document.getElementById('shapes-content');
+    container.innerHTML = '';
+
+    const shapesRootPc = parseInt(document.getElementById('shapesRoot').value, 10);
+
+    const allQualities = [
+      ['major', QUALITIES.major], ['minor', QUALITIES.minor],
+      ['augmented', QUALITIES.augmented], ['diminished', QUALITIES.diminished],
+    ];
+
+    for (const [qualityKey, quality] of allQualities) {
+      const section = document.createElement('div');
+      section.className = 'position-section';
+
+      const heading = document.createElement('h2');
+      heading.textContent = quality.name;
+      section.appendChild(heading);
+
+      const sub = document.createElement('p');
+      sub.className = 'position-sub';
+      sub.textContent = `Three inversions of a ${quality.name.toLowerCase()} triad on ${set.notes}.`;
+      section.appendChild(sub);
+
+      const grid = document.createElement('div');
+      grid.className = 'shapes-grid';
+
+      for (let inv = 0; inv < 3; inv++) {
+        const canon = canonicalShape(set, quality, inv);
+        const shift = 1 - Math.min(...canon.offsets);
+        const normalizedFrets = canon.offsets.map(o => o + shift);
+        const pcs = canon.intervalIdxs.map(idx => mod(shapesRootPc + quality.intervals[idx], 12));
+        const shape = { frets: normalizedFrets, labels: canon.labels, pcs, inversionIndex: inv };
+        const minF = Math.min(...normalizedFrets);
+        const maxF = Math.max(...normalizedFrets);
+        const startFret = Math.max(0, minF - 1);
+        const numCells = Math.max(maxF - startFret + 1, 4);
+        const color = SHAPE_COLORS[`${qualityKey}-${inv}`];
+
+        const displayLabels = (labelMode === 'notes') ? pcs.map(pc => NOTE_NAMES[pc]) : canon.labels;
+        const bassLabel = displayLabels[0];
+        const card = document.createElement('div');
+        card.className = 'cell';
+        card.style.borderColor = color;
+        card.innerHTML =
+          `<div class="grid-header"><span class="chord-name" style="color:${color}">${INVERSION_NAMES[inv]}</span></div>` +
+          renderDiagram(set, shape, startFret, numCells, color) +
+          `<div class="notes-label">${displayLabels.join(' – ')} &nbsp;<span style="font-weight:400;color:#777">(${bassLabel} in bass)</span></div>`;
+        grid.appendChild(card);
+      }
+
+      section.appendChild(grid);
+      container.appendChild(section);
+    }
+  }
+
+  function populateFbChord(rootPc) {
+    const sel = document.getElementById('fbChord');
+    sel.innerHTML = '';
+    const none = document.createElement('option');
+    none.value = -1;
+    none.textContent = '— scale notes only —';
+    sel.appendChild(none);
+    SCALE_DEGREES.forEach((deg, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${deg.roman}  —  ${chordName(mod(rootPc + deg.interval, 12), deg.qualityKey)}`;
+      sel.appendChild(opt);
+    });
+  }
+
+  function renderFretboard() {
+    const rootPc  = parseInt(document.getElementById('fbRoot').value, 10);
+    const degreeIdx = parseInt(document.getElementById('fbChord').value, 10);
+
+    // Scale notes (major scale of selected key)
+    const SCALE_IVS = [0, 2, 4, 5, 7, 9, 11];
+    const scaleSet  = new Set(SCALE_IVS.map(i => mod(rootPc + i, 12)));
+
+    // Chord data (optional)
+    let chordPcs    = null; // [rootPc, 3rdPc, 5thPc]
+    let chordVoicings = null;
+    let chordQKey   = null;
+
+    if (degreeIdx >= 0) {
+      const deg      = SCALE_DEGREES[degreeIdx];
+      const cRoot    = mod(rootPc + deg.interval, 12);
+      const quality  = QUALITIES[deg.qualityKey];
+      chordQKey      = deg.qualityKey;
+      chordPcs       = quality.intervals.map(iv => mod(cRoot + iv, 12));
+
+      chordVoicings = [];
+      for (const set of STRING_SETS) {
+        for (let inv = 0; inv < 3; inv++) {
+          const shape = computeShape(set, cRoot, quality, inv);
+          chordVoicings.push({
+            strings: set.strings,
+            frets:   shape.frets,
+            labels:  shape.labels,
+            color:   SHAPE_COLORS[`${chordQKey}-${inv}`],
+          });
+        }
+      }
+    }
+
+    // ── Layout constants ──────────────────────────────────────────
+    const VB_W = 880, VB_H = 134;
+    const LP = 26, openW = 32, RP = 6;   // leftPad, open-col width, rightPad
+    const nutX = LP + openW;              // 58 — x of the nut
+    const numFrets = 12;
+    const fw = (VB_W - nutX - RP) / numFrets; // ≈ 68 px per fret cell
+    const TP = 22, SS = 18;              // topPad, string spacing
+
+    // y-coordinate for each string (6=low E at top, 1=high e at bottom)
+    const SY = {};
+    for (let s = 6; s >= 1; s--) SY[s] = TP + (6 - s) * SS;
+
+    // x-coordinate of a note: fret 0 = open column, fret 1-12 = in fret cell
+    const noteX = f => f === 0 ? LP + openW / 2 : nutX + (f - 0.5) * fw;
+    const wireX = f => nutX + f * fw; // position of the fret wire
+
+    let svg = `<svg width="100%" viewBox="0 0 ${VB_W} ${VB_H}" xmlns="http://www.w3.org/2000/svg">`;
+
+    // Neck background
+    svg += `<rect x="${LP}" y="${SY[6]}" width="${openW}" height="${5*SS}" fill="#f0ede8"/>`;
+    svg += `<rect x="${nutX}" y="${SY[6]}" width="${VB_W-nutX-RP}" height="${5*SS}" fill="#fdf8f0"/>`;
+
+    // Inlay position markers
+    for (const mf of [3, 5, 7, 9]) {
+      svg += `<circle cx="${wireX(mf) - fw/2}" cy="${(SY[3]+SY[4])/2}" r="4.5" fill="#e0d8cc"/>`;
+    }
+    const x12 = wireX(12) - fw / 2;
+    svg += `<circle cx="${x12}" cy="${(SY[5]+SY[4])/2}" r="4.5" fill="#e0d8cc"/>`;
+    svg += `<circle cx="${x12}" cy="${(SY[3]+SY[2])/2}" r="4.5" fill="#e0d8cc"/>`;
+
+    // Fret wires (vertical lines)
+    for (let f = 0; f <= numFrets; f++) {
+      const x = wireX(f), isNut = f === 0;
+      svg += `<line x1="${x}" y1="${SY[6]}" x2="${x}" y2="${SY[1]}"
+        stroke="${isNut ? '#555' : '#c8b89a'}" stroke-width="${isNut ? 5 : 1.5}"/>`;
+    }
+
+    // String lines (horizontal, varying thickness)
+    const SW = [2.4, 2.0, 1.6, 1.3, 1.0, 0.8];
+    for (let s = 6; s >= 1; s--) {
+      svg += `<line x1="${LP}" x2="${VB_W-RP}" y1="${SY[s]}" y2="${SY[s]}"
+        stroke="#666" stroke-width="${SW[6-s]}"/>`;
+    }
+
+    // String name labels (left)
+    for (let s = 6; s >= 1; s--) {
+      svg += `<text x="${LP-4}" y="${SY[s]+4}" font-size="11" text-anchor="end"
+        font-weight="600" fill="#555">${STRINGS[s].name}</text>`;
+    }
+
+    // Fret number labels (bottom) + "open" label
+    svg += `<text x="${noteX(0)}" y="${VB_H-3}" font-size="8" text-anchor="middle" fill="#aaa">open</text>`;
+    for (let f = 1; f <= numFrets; f++) {
+      svg += `<text x="${noteX(f)}" y="${VB_H-3}" font-size="9" text-anchor="middle" fill="#aaa">${f}</text>`;
+    }
+
+    // ── Note dots ─────────────────────────────────────────────────
+    const R = 7;
+    // Chord tone colours: root=blue, 3rd=green, 5th=red (interval-semantics, not shape colours)
+    const CTONE_FILL  = ['#2563eb', '#16a34a', '#dc2626'];
+    const CTONE_TEXT  = '#fff';
+
+    for (let s = 6; s >= 1; s--) {
+      for (let f = 0; f <= 12; f++) {
+        const pc        = mod(STRINGS[s].open + f, 12);
+        const noteName  = NOTE_NAMES[pc];
+        const cx        = noteX(f);
+        const cy        = SY[s];
+        const inScale   = scaleSet.has(pc);
+        const toneIdx   = chordPcs ? chordPcs.indexOf(pc) : -1;
+
+        if (toneIdx >= 0) {
+          // Chord tone — bold coloured circle
+          const fc = CTONE_FILL[toneIdx];
+          svg += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="${fc}"/>`;
+          svg += `<text x="${cx}" y="${cy+3.5}" font-size="9" text-anchor="middle" font-weight="700" fill="${CTONE_TEXT}">${noteName}</text>`;
+        } else if (inScale) {
+          // Scale note — outlined circle
+          svg += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#e0e7ff" stroke="#93c5fd" stroke-width="1.5"/>`;
+          svg += `<text x="${cx}" y="${cy+3.5}" font-size="9" text-anchor="middle" fill="#3b82f6" font-weight="600">${noteName}</text>`;
+        } else {
+          // Non-scale — faint text only
+          svg += `<text x="${cx}" y="${cy+3.5}" font-size="8" text-anchor="middle" fill="#d1d5db">${noteName}</text>`;
+        }
+      }
+    }
+
+    // ── Voicing brackets ──────────────────────────────────────────
+    // Draw connecting lines for each playable voicing (4 string groups × 3 inversions).
+    // Voicings whose frets go beyond the displayed neck are skipped.
+    if (chordVoicings) {
+      for (const { strings, frets, color } of chordVoicings) {
+        if (Math.max(...frets) > 12) continue;
+        const pts = strings.map((s, j) => ({ x: noteX(frets[j]), y: SY[s] }));
+        svg += `<polyline points="${pts.map(p => `${p.x},${p.y}`).join(' ')}"
+          fill="none" stroke="${color}" stroke-width="3.5" stroke-opacity="0.55"
+          stroke-linecap="round" stroke-linejoin="round"/>`;
+      }
+    }
+
+    svg += '</svg>';
+    document.getElementById('fretboard-content').innerHTML = svg;
+  }
+
+  function showTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+    if (name === 'shapes') renderShapes();
+    if (name === 'positions') renderAll();
+    if (name === 'fretboard') renderFretboard();
+  }
+
+  // populate root-note dropdowns (positions tab, shapes tab note-name reference, fretboard key)
+  ['root', 'shapesRoot', 'fbRoot'].forEach(id => {
+    const sel = document.getElementById(id);
+    NOTE_NAMES.forEach((name, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+  });
+
+  // populate both string-set dropdowns
+  ['shapesStringSet', 'positionsStringSet'].forEach(id => {
+    const sel = document.getElementById(id);
+    STRING_SETS.forEach((set, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = set.notes;
+      sel.appendChild(opt);
+    });
+  });
+
+  // populate progression dropdown
+  const progSelect = document.getElementById('progression');
+  PROGRESSIONS.forEach((p, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = p.label;
+    progSelect.appendChild(opt);
+  });
+
+  document.getElementById('shapesStringSet').addEventListener('change', renderShapes);
+  document.getElementById('shapesRoot').addEventListener('change', renderShapes);
+  document.getElementById('positionsStringSet').addEventListener('change', renderAll);
+  document.getElementById('root').addEventListener('change', renderAll);
+  document.getElementById('progression').addEventListener('change', renderAll);
+
+  // Fretboard tab init
+  populateFbChord(0);
+  document.getElementById('fbRoot').addEventListener('change', () => {
+    const rootPc = parseInt(document.getElementById('fbRoot').value, 10);
+    populateFbChord(rootPc);
+    renderFretboard();
+  });
+  document.getElementById('fbChord').addEventListener('change', renderFretboard);
+</script>
+</body>
+</html>
